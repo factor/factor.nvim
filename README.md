@@ -139,4 +139,4 @@ Vocabulary roots can be specified using:
 
 ## Credits
 
-Based on the original [factor.vim](https://github.com/factor/factor) Vimscript plugin.
+Based on the original [factor.vim](https://github.com/factor/factor.vim) Vimscript plugin.
