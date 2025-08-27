@@ -1,6 +1,8 @@
-# factor.nvim
+# Neovim support for Factor
 
-A NeoVim plugin for the [Factor programming language](https://factorcode.org/), providing vocabulary navigation, syntax highlighting, and auto-pairing support.
+A Neovim plugin for the [Factor programming
+language](https://factorcode.org/), providing vocabulary navigation, syntax
+highlighting, and auto-pairing support.
 
 ## Features
 
@@ -100,7 +102,7 @@ The plugin provides the following default key mappings:
 When `enable_autopairs` is set to `true`, the plugin provides intelligent auto-pairing:
 
 - `[` → `[]` with cursor in between
-- `(` → `()` with cursor in between  
+- `(` → `()` with cursor in between
 - `{` → `{}` with cursor in between
 - `"` → `""` with cursor in between
 - `[` + `=` → `[=|=]` for literal arrays
@@ -134,7 +136,7 @@ Vocabulary roots can be specified using:
 
 ## Requirements
 
-- NeoVim 0.7.0 or higher
+- Neovim 0.7.0 or higher
 - Factor programming language (for actual code execution)
 
 ## Credits
