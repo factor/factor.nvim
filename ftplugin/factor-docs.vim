@@ -5,3 +5,6 @@
 
 " Documentation lines can be any length of characters.
 setlocal textwidth=0
+
+let b:undo_ftplugin = get(b:, 'undo_ftplugin', '')
+      \ . (exists('b:undo_ftplugin') ? ' | ' : '') . 'setlocal textwidth<'

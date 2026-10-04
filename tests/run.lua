@@ -7,10 +7,11 @@ local function equal(expected, actual, message)
 end
 
 local ok, err = xpcall(function()
+    equal(nil, package.loaded.factor, "defer loading Lua module")
+    vim.cmd("runtime plugin/factor.lua")
+    equal(nil, package.loaded.factor, "idempotent command registration")
     dofile("tests/navigation.lua")(root, equal)
-    if vim.fn.filereadable("tests/filetype.lua") == 1 then
-        dofile("tests/filetype.lua")(root, equal)
-    end
+    dofile("tests/filetype.lua")(root, equal)
 end, debug.traceback)
 
 vim.fn.delete(root, "rf")
