@@ -2,14 +2,11 @@ local M = {}
 local buffers = {}
 local group = vim.api.nvim_create_augroup("FactorFtplugin", { clear = false })
 
-local function keys(s)
-    return vim.api.nvim_replace_termcodes(s, true, false, true)
-end
-
 -- Return insert-mode keystrokes without editing the buffer under textlock.
 -- C-G U keeps cursor movement in the same undo block.
+-- Leave key notation for vim.keymap.set() to convert once, including on 0.7.
 local function insert(before, after)
-    return before .. after .. string.rep(keys("<C-G>U<Left>"), #after)
+    return before .. after .. string.rep("<C-G>U<Left>", #after)
 end
 
 local function context()
@@ -48,17 +45,17 @@ local autopairs = {
     ["<CR>"] = function()
         local pair, wider = context()
         if pair == "[]" or pair == "{}" or wider == "[  ]" or wider == "{  }" then
-            return keys("<CR><C-O>O")
+            return "<CR><C-O>O"
         end
-        return keys("<CR>")
+        return "<CR>"
     end,
     ["<BS>"] = function()
         local pair, wider = context()
         if wider == "[  ]" or wider == "(  )" or wider == "{  }"
             or pair == '""' or pair == "==" or pair == "()" or pair == "[]" or pair == "{}" then
-            return keys("<Del><BS>")
+            return "<Del><BS>"
         end
-        return keys("<BS>")
+        return "<BS>"
     end,
     ["<Space>"] = function()
         local pair, wider, line, col = context()
@@ -123,7 +120,7 @@ function M.attach()
     end
     if factor.config.enable_autopairs then
         for lhs, rhs in pairs(autopairs) do
-            map(state, "i", lhs, rhs, { expr = true, replace_keycodes = false })
+            map(state, "i", lhs, rhs, { expr = true })
         end
         table.insert(state.autocmds, vim.api.nvim_create_autocmd("BufWritePre", {
             group = group,
