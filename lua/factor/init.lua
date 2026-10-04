@@ -1,7 +1,7 @@
 local M = {}
 
-local path_sep = vim.loop.os_uname().sysname == "Windows" and "\\" or "/"
-local path_sep_pattern = vim.loop.os_uname().sysname == "Windows" and "[\\\\]+" or "/+"
+local path_sep = "/"
+local path_sep_pattern = vim.loop.os_uname().sysname == "Windows" and "[\\/]+" or "/+"
 
 M.config = {
     resource_path = vim.fn.expand("~/factor/"),
@@ -17,11 +17,15 @@ M.config = {
     new_vocab_root = function()
         return "resource:work"
     end,
-    enable_autopairs = false
+    enable_autopairs = false,
+    default_mappings = true
 }
 
 local function remove_last_path_sep(path)
-    return path:gsub(path_sep_pattern .. "$", "")
+    if path == "/" or path:match("^%a:[\\/]$") then
+        return path
+    end
+    return (path:gsub(path_sep_pattern .. "$", ""))
 end
 
 local function ensure_last_path_sep(path)
@@ -76,7 +80,7 @@ function M.expand_vocab_roots(vocab_roots)
         else
             if vocab_root:match("^resource:") then
                 table.insert(expanded_vocab_roots,
-                    M.config.resource_path .. vocab_root:sub(10))
+                    ensure_last_path_sep(vim.fn.expand(M.config.resource_path)) .. vocab_root:sub(10))
             else
                 table.insert(expanded_vocab_roots, vocab_root)
             end
@@ -106,7 +110,8 @@ function M.detect_parent_vocab_roots(vocab_roots, fname, expr, nosuf, alllinks)
             end
         end
         
-        current_path = current_path == "/" and "" or vim.fn.fnamemodify(current_path, ":h")
+        local parent = vim.fn.fnamemodify(current_path, ":h")
+        current_path = parent == current_path and "" or parent
     end
     
     return parent_vocab_roots
@@ -162,8 +167,9 @@ function M.glob_factor(expr, vocab, trailing_dir_sep, output, nosuf, alllinks)
             end
         end
     else
-        if expr_str:match("^%%[resource]%*") then found["resource:"] = true end
-        if expr_str:match("^%%[vocab]%*") then found["vocab:"] = true end
+        local prefix = expr_str:match("^(%a*)%*")
+        if prefix and ("resource"):sub(1, #prefix) == prefix then found["resource:"] = true end
+        if prefix and ("vocab"):sub(1, #prefix) == prefix then found["vocab:"] = true end
         
         for _, expr_path in ipairs(glob(expr_str, true, true)) do
             expr_path = vim.fn.fnamemodify(expr_path, ":p")
@@ -246,8 +252,7 @@ end
 
 function M.get_factor_file_base()
     local filename = vim.fn.expand("%:r")
-    filename = filename:gsub("%-docs", "")
-    filename = filename:gsub("%-tests", "")
+    filename = filename:gsub("%-docs$", ""):gsub("%-tests$", "")
     return filename
 end
 
@@ -264,6 +269,8 @@ function M.go_to_factor_vocab_tests()
 end
 
 function M.setup(opts)
+    -- vocab_roots is a derived cache, unless explicitly provided by the user.
+    M.config.vocab_roots = nil
     M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 end
 
