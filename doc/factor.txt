@@ -1,0 +1,89 @@
+*factor.txt*                 Factor support for Neovim
+
+Requires Neovim 0.7 or newer. Factor itself is needed only to regenerate the
+vocabulary syntax definitions; editing and navigation do not execute Factor.
+
+CONFIGURATION                                              *factor-setup*
+
+Configure before opening Factor buffers. setup() is optional with defaults. >lua
+    require('factor').setup({
+        resource_path = '~/factor',
+        default_vocab_roots = {
+            'resource:core', 'resource:basis',
+            'resource:extra', 'resource:work',
+        },
+        additional_vocab_roots = {},
+        new_vocab_root = function() return 'resource:work' end,
+        enable_autopairs = false,
+        default_mappings = true,
+    })
+<
+When additional_vocab_roots is omitted, ~/.factor-roots supplies additional
+roots, one path per line. An explicit list replaces that file's contents.
+resource_path accepts a path with or without a trailing separator.
+resource: paths are relative to resource_path. vocab: roots add paths beneath
+the roots that precede them. Absolute paths are also supported.
+
+Calling setup() clears the cached vocabulary roots. To override the combined
+roots explicitly, pass vocab_roots. A subsequent setup() clears that override
+unless it is supplied again. Mapping and pairing options apply to newly loaded
+Factor ftplugins; reload an existing buffer's filetype to apply changes: >vim
+    setlocal filetype=text
+    setlocal filetype=factor
+<
+COMMANDS                                                   *factor-commands*
+
+:FactorVocab[!] {name}                                      *:FactorVocab*
+    Open the implementation of the named vocabulary, e.g. foo.bar.
+    A count selects the nth match in sorted path order: :2FactorVocab foo.bar.
+    ! discards unsaved changes in the current buffer. Tab completes names.
+
+:NewFactorVocab[!] {name}                                   *:NewFactorVocab*
+    Create directories under new_vocab_root and open an implementation buffer.
+    The file is saved when you write the buffer. A count selects the nth root.
+    ! discards unsaved changes in the current buffer.
+
+:FactorVocabImpl                                           *:FactorVocabImpl*
+:FactorVocabDocs                                           *:FactorVocabDocs*
+:FactorVocabTests                                          *:FactorVocabTests*
+    Open the implementation, documentation, or tests beside the current file.
+    Only a trailing -docs or -tests filename suffix is removed.
+
+MAPPINGS                                                   *factor-mappings*
+
+Default mappings are buffer-local to Factor files and do not replace existing
+mappings. Set default_mappings=false to use only commands or your own mappings.
+
+    <Leader>fi    :FactorVocabImpl
+    <Leader>fd    :FactorVocabDocs
+    <Leader>ft    :FactorVocabTests
+    <Leader>fv    Start :FactorVocab on the command line
+    <Leader>fn    Start :NewFactorVocab on the command line
+
+AUTO-PAIRING                                                *factor-autopairs*
+
+Set enable_autopairs=true to enable buffer-local expression mappings. Existing
+insert mappings take precedence. Brackets, braces, parentheses, and quotes are
+paired. Space pads empty brackets/braces and inserts a stack effect in ().
+= inside [] produces [==]. Enter inside [] or {} creates an indented block.
+Backspace removes empty pairs. Consecutive insertions remain one undo block.
+
+When auto-pairing is enabled, trailing spaces are removed before saving Factor
+buffers. Options, mappings, and autocmds are cleaned up on filetype changes.
+Files ending in -docs.factor use factor.factor-docs with textwidth=0.
+
+GENERATED SYNTAX                                            *factor-syntax*
+
+From the plugin directory, use the Factor language executable (which may need
+an absolute path to distinguish it from the Unix factor utility): >sh
+    factor syntax/factor/generated.factor > syntax/factor/generated.vim
+<
+DEVELOPMENT                                                 *factor-tests*
+
+Run the headless regression suite from the plugin directory: >sh
+    sh tests/run.sh
+    NVIM=/path/to/nvim sh tests/run.sh
+<
+The suite isolates Neovim's data, cache, state, and configuration directories.
+
+vim:tw=78:ts=8:ft=help:norl:

@@ -19,7 +19,7 @@ highlighting, and auto-pairing support.
 ```lua
 {
   "factor/factor.nvim",
-  ft = "factor",
+  ft = { "factor", "factor.factor-docs" },
   config = function()
     require("factor").setup({
       -- Configuration options (see below)
@@ -33,7 +33,7 @@ highlighting, and auto-pairing support.
 ```lua
 use {
   "factor/factor.nvim",
-  ft = "factor",
+  ft = { "factor", "factor.factor-docs" },
   config = function()
     require("factor").setup({
       -- Configuration options (see below)
@@ -69,6 +69,9 @@ require("factor").setup({
   
   -- Enable smart auto-pairing of brackets, quotes, etc.
   enable_autopairs = false,
+
+  -- Install buffer-local navigation mappings in Factor buffers
+  default_mappings = true,
   
   -- Characters to escape in glob patterns
   glob_escape = vim.loop.os_uname().sysname == "Windows" and "*[]?`{$" or "*[]?`{$\\"
@@ -77,15 +80,17 @@ require("factor").setup({
 
 ## Key Mappings
 
-The plugin provides the following default key mappings:
+The plugin provides the following buffer-local mappings in Factor files.
+Existing mappings take precedence. Set `default_mappings = false` to disable
+these defaults and use commands or your own mappings.
 
 | Key | Description |
 |-----|-------------|
 | `<Leader>fi` | Go to vocabulary implementation file |
 | `<Leader>fd` | Go to vocabulary documentation file |
 | `<Leader>ft` | Go to vocabulary tests file |
-| `<Leader>fv` | Go to a vocabulary (prompts for name) |
-| `<Leader>fn` | Create a new vocabulary (prompts for name) |
+| `<Leader>fv` | Start `:FactorVocab` on the command line |
+| `<Leader>fn` | Start `:NewFactorVocab` on the command line |
 
 ## Commands
 
@@ -111,6 +116,10 @@ When `enable_autopairs` is set to `true`, the plugin provides intelligent auto-p
 - Pressing `Enter` inside brackets creates a multi-line block
 - `Backspace` intelligently removes paired characters
 
+Existing insert mappings take precedence. Auto-pairing also removes trailing
+spaces before saving Factor buffers. Mappings and options are cleaned up when
+a buffer changes filetype.
+
 ## File Structure
 
 The plugin recognizes the following Factor file conventions:
@@ -127,17 +136,46 @@ The plugin searches for vocabularies in the following locations:
 
 1. Standard Factor directories (`core`, `basis`, `extra`, `work`) under your Factor installation
 2. Custom paths defined in `~/.factor-roots` (one path per line)
-3. Additional paths configured via the `additional_vocab_roots` option
+3. An explicit `additional_vocab_roots` list overrides `~/.factor-roots`
 
 Vocabulary roots can be specified using:
 - `resource:` prefix - relative to Factor installation directory
 - `vocab:` prefix - search in all vocabulary roots
 - Absolute paths
 
+`resource_path` accepts paths with or without a trailing separator. Calling
+`setup()` invalidates cached vocabulary roots. Configure mapping and pairing
+options before opening Factor files; reload a buffer's filetype to apply those
+options to an existing buffer.
+
+See `:help factor.txt` for commands, counts, and configuration details.
+
+## Regenerating syntax definitions
+
+From this directory, run the Factor language executable:
+
+```sh
+factor syntax/factor/generated.factor > syntax/factor/generated.vim
+```
+
+Use its full path if your system also has the Unix `factor` utility.
+
+## Development
+
+Run the headless regression tests with Neovim:
+
+```sh
+sh tests/run.sh
+# Or select a particular executable:
+NVIM=/path/to/nvim sh tests/run.sh
+```
+
+CI runs the suite on Neovim 0.7.0 and 0.12.5.
+
 ## Requirements
 
 - Neovim 0.7.0 or higher
-- Factor programming language (for actual code execution)
+- Factor programming language (only for regenerating syntax definitions)
 
 ## Credits
 

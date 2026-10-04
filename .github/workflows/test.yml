@@ -1,0 +1,25 @@
+name: Tests
+on: [push, pull_request]
+
+jobs:
+  neovim:
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - version: v0.7.0
+            archive: nvim-linux64
+          - version: v0.12.5
+            archive: nvim-linux-x86_64
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Neovim
+        env:
+          VERSION: ${{ matrix.version }}
+          ARCHIVE: ${{ matrix.archive }}
+        run: |
+          curl -fsSL "https://github.com/neovim/neovim/releases/download/$VERSION/$ARCHIVE.tar.gz" -o "$RUNNER_TEMP/neovim.tar.gz"
+          tar -xzf "$RUNNER_TEMP/neovim.tar.gz" -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/$ARCHIVE/bin" >> "$GITHUB_PATH"
+      - run: sh tests/run.sh
